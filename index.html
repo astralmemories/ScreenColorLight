@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Screen Color Light</title>
+    <meta name="description" content="HTML5 game development">
+    <meta name="author" content="Astral Memories">
+
+    <!-- css.gg Icons -->
+    <link href='https://css.gg/color-picker.css' rel='stylesheet'>
+    <link href='https://css.gg/maximize.css' rel='stylesheet'>
+    <link href='https://css.gg/play-button-r.css' rel='stylesheet'>
+    <link href='https://css.gg/minimize.css' rel='stylesheet'>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&display=swap" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+    <!-- Favicon - https://www.favicon-generator.org -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <style>
+		body {
+			background-color: black;
+            width: 100%;
+            height: 100%;
+            margin: 0px auto;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .colors-container {
+            position: absolute;
+            top: 0;
+            color: white;
+            background-color: rgb(40, 40, 40);
+            width: 100%;
+            /* margin: 0 auto; */
+            padding-top: 10px;
+            padding-bottom: 10px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+        }
+        .btn-bg {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 2px solid white;
+            margin: 5px;
+            border-radius: 50%;
+            filter: drop-shadow(6px 6px 10px black);
+        }
+        .background-color {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 2px solid white;
+            margin: 5px;
+            border-radius: 50%;
+            filter: drop-shadow(6px 6px 10px black);
+        }
+        .btn-bg:hover, .background-color:hover, #color_front:hover, #fullscreen-option:hover, #exit-fullscreen-option:hover, .background-type-0, .background-type-1, .background-type-2, .background-type-3 {
+            cursor: pointer;
+        }
+
+        .background-type-0, .background-type-1 , .background-type-2, .background-type-3 {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 2px solid white;
+            margin: 5px;
+            border-radius: 50%;
+            filter: drop-shadow(6px 6px 10px black);
+        }
+        .background-type-0 {
+            background: white;
+        }
+        .background-type-1 {
+            background: linear-gradient(black, white, black);
+        }
+        .background-type-2 {
+            background: linear-gradient(red, purple, green);
+        }
+        .background-type-3 {
+            background: linear-gradient(
+                to bottom,
+                blue,
+                blue 25%,
+                red 25%,
+                red 50%,
+                green 50%,
+                green 75%, 
+                purple 75%,
+                purple
+            );
+        }
+
+        /* Custom Color Input */
+        label {
+            font: 1rem 'Fira Sans', sans-serif;
+        }
+        .background-color-buttons {
+            text-align: center;
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+        input[type=color] {
+            display: none;
+        }
+        #color_front {
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            background-color:#5A19EA;
+            display: inline-block;
+            filter: drop-shadow(6px 6px 10px black);
+        }
+        #fullscreen-option, #exit-fullscreen-option {
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            background-color: black;
+            display: inline-block;
+            filter: drop-shadow(6px 6px 10px black);
+        }
+        i.gg-color-picker {
+            left: 4px;
+            top: 12px;
+        }
+        i.gg-maximize {
+            left: 8px;
+            top: 8px;
+        }
+        i.gg-minimize {
+            left: 13px;
+            top: 13px;
+        }
+        i.gg-play-button-r {
+            left: 4px;
+            top: 4px;
+        }
+
+        .slider-color {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: opacity .15s ease-in-out;
+            transition: opacity .15s ease-in-out;
+        }
+
+        .site-name {
+            font-family: 'Bungee Shade', cursive;
+            font-size: 25px;
+            text-align: center;
+            margin-left: 10px;
+            margin-right: 10px;
+            text-shadow: #000000 1px 0 10px;
+        }
+	</style>
+    <script>
+        // Resources
+        // ---------
+        // https://stackoverflow.com/questions/32174434/how-to-change-fill-color-of-html5-canvas-on-click-event
+        // https://spicyyoghurt.com/tutorials/html5-javascript-game-development/draw-on-html5-canvas
+        // https://www.jqueryscript.net/other/jQuery-Plugin-For-Mouse-Stop-Event-mousestop.html
+        // https://theonlytutorials.com/hide-div-mouse-inactive-5-seconds-show-mouse-active/
+        // https://stackoverflow.com/questions/1443292/how-do-i-implement-onchange-of-input-type-text-with-jquery
+        // https://css.gg/color-picker
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // Hide .colors-container when mouse is inactive for 3 seconds then show when mouse is active!
+        var timedelay = 1;
+        function delayCheck() {
+            if(timedelay == 3) {
+                $(".colors-container").fadeOut();
+                timedelay = 1;
+            }
+            timedelay = timedelay + 1;
+        }
+
+        $(document).mousemove(function() {
+            if($(".colors-container:hover").length != 0){
+                // Mouse is Over the DIV Element, do Nothing!
+            } else {
+                $(".colors-container").fadeIn();
+                timedelay = 1;
+                clearInterval(_delay);
+                _delay = setInterval(delayCheck, 500);
+            }
+        });
+
+        function freezeControls() {
+            $(".colors-container").fadeIn();
+            timedelay = 1;
+            clearInterval(_delay);
+        }
+
+        // Page loads starts delay timer
+        _delay = setInterval(delayCheck, 500)
+
+        // END of Hide .colors-container when mouse is inactive for 3 seconds then show when mouse is active!
+        /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+        //////////////////////////////////////
+        // Canvas Animated Gradient Background
+
+        // Red, Green, and Blue generators
+        var R = function(x, y, t) {
+            return( Math.floor(192 + 64*Math.cos( (x*x-y*y)/300 + t )) );
+        }
+        var G = function(x, y, t) {
+            return( Math.floor(192 + 64*Math.sin( (x*x*Math.cos(t/4)+y*y*Math.sin(t/3))/300 ) ) );
+        }
+        var B = function(x, y, t) {
+            return( Math.floor(192 + 64*Math.sin( 5*Math.sin(t/9) + ((x-100)*(x-100)+(y-100)*(y-100))/1100) ));
+        }
+        // Time
+        var t = 0;
+        // Animation Speed
+        var speed = 0.120;
+
+        // END of Canvas Animated Gradient Background
+        /////////////////////////////////////////////
+
+
+        // Color variables
+        let backgroundColor;
+        let oldRandomColor = "black";
+
+
+        ////////////////////////
+        // Animated Solid Colors
+
+        var timer = 0;
+        var interval = 0.5;
+
+        const colors = [ '#FFFFFF', '#36BA2F', '#20E450', '#FFF542', '#EAC801', '#FF8604', '#E44F05', '#EA0000', '#D20081', '#D11FE3', '#9F2ED4', '#5A19EA', '#1F1EE5', '#0650FF', '#1B88EF', '#27B3E4', '#2AD6CA' ];
+
+        function SelectRandomColor() {
+            var randIndex = Math.floor(Math.random() * colors.length);
+
+            backgroundColor = colors[randIndex];
+        }
+
+        // END of Animated Solid Colors
+        ///////////////////////////////
+
+        // Check if fullscreen is on
+        // https://www.youtube.com/watch?v=3FjYcMKZ3SU
+        function getFullscreenElement() {
+            return document.fullscreenElement
+                || document.webkitfullscreenElement
+                || document.mozfullscreenElement
+                || document.msfullscreenElement;
+        }
+    </script>
+</head>
+
+<body>
+    <div id="fullpage-container">
+        <!-- Background Color Options Buttons -->
+
+        <div class="colors-container" onmouseover="freezeControls()">
+
+            <div class="site-name" style="align-self: center">
+                <span style="color: #36BA2F">S</span><span style="color: #20E450">c</span><span style="color: #FFF542">r</span><span style="color: #EAC801">e</span><span style="color: #FF8604">e</span><span style="color: #E44F05">n</span>
+                <span style="color: #EA0000">C</span><span style="color: #D20081">o</span><span style="color: #D11FE3">l</span><span style="color: #9F2ED4">o</span><span style="color: #5A19EA">r</span>
+                <span style="color: #1F1EE5">L</span><span style="color: #0650FF">i</span><span style="color: #1B88EF">g</span><span style="color: #27B3E4">h</span><span style="color: #2AD6CA">t</span>
+            </div>
+
+            <div class="background-color-buttons background-type">
+                <label>Style</label><br>
+                <span class="background-type-0" data-bg-type="0"></span> <!-- SIMPLE -->
+                <span class="background-type-1" data-bg-type="1"></span> <!-- GRADIENT -->
+                <span class="background-type-2" data-bg-type="2"><i class="gg-play-button-r"></i></span> <!-- Canvas Animated Gradient Background -->
+                <span class="background-type-3" data-bg-type="3"><i class="gg-play-button-r"></i></span> <!-- Animated Solid Colors -->
+            </div>
+
+            <div class="background-color-buttons custom-color-input">
+                <label for="custom_color">Custom</label><br>
+                <span id="color_front"><i class="gg-color-picker"></i></span>
+                <input type="color" class="custom_color" id="custom_color" name="custom_color" value="#5A19EA">
+            </div>
+
+            <div class="background-color-buttons">
+                <label>Colors</label><br>
+                <!-- <h4>Background Color</h4> -->
+                <span class="background-color" data-bg-color="#FFFFFF"></span> <!-- White -->
+                <span class="background-color" data-bg-color="#36BA2F"></span> <!-- Green -->
+                <span class="background-color" data-bg-color="#20E450"></span> <!-- Light Green -->
+                <span class="background-color" data-bg-color="#FFF542"></span> <!-- Yellow -->
+                <span class="background-color" data-bg-color="#EAC801"></span> <!-- Dark Yellow -->
+                <span class="background-color" data-bg-color="#FF8604"></span> <!-- Orange -->
+                <span class="background-color" data-bg-color="#E44F05"></span> <!-- Dark Orange -->
+                <span class="background-color" data-bg-color="#EA0000"></span> <!-- Red -->
+                <!-- Purples -->
+                <span class="background-color" data-bg-color="#D20081"></span>
+                <span class="background-color" data-bg-color="#D11FE3"></span>
+                <span class="background-color" data-bg-color="#9F2ED4"></span>
+                <!-- Blues -->
+                <span class="background-color" data-bg-color="#5A19EA"></span>
+                <span class="background-color" data-bg-color="#1F1EE5"></span> <!-- Blue -->
+                <span class="background-color" data-bg-color="#0650FF"></span> <!-- Light Blue -->
+                <span class="background-color" data-bg-color="#1B88EF"></span>
+                <span class="background-color" data-bg-color="#27B3E4"></span>
+                <span class="background-color" data-bg-color="#2AD6CA"></span>
+            </div>
+
+            <div class="background-color-buttons fullscreen-button">
+                <label for="fullscreen-option">Fullscreen</label><br>
+                <span id="fullscreen-option"><i class="gg-maximize"></i></span>
+            </div>
+
+            <div class="background-color-buttons exit-fullscreen-button" style="display: none;">
+                <label for="exit-fullscreen-option">Exit Fullscreen</label><br>
+                <span id="exit-fullscreen-option"><i class="gg-minimize"></i></span>
+            </div>
+
+        </div>
+
+        <!-- Canvas -->
+        <canvas id="canvas">
+            Your browser does not support the HTML5 canvas tag.
+        </canvas>
+    </div>
+
+    <!-- Canvas JavasCript Code -->
+    <script>
+        "use strict";
+
+        // Declare as variable
+        //let fullpageContainer
+        let canvas;
+        let context;
+        let secondsPassed;
+        let oldTimeStamp;
+        let fps;
+
+        //  Background Types
+        // 0 - Simple
+        // 1 - Gradient
+        var backgroundType = 0;
+
+        // Color variables
+        //let backgroundColor;
+
+        // Listen to the onLoad event
+        window.onload = init;
+
+        // Trigger init function when the page has loaded
+        function init() {
+
+            // Color Options: Change the background color of each color option button
+            $('.background-color').each(function () {
+                $(this).css("background", $(this).data('bg-color'));
+            });
+
+            // Grab the canvas
+            canvas = document.getElementById('canvas');
+            // Set the canvas context to 2D
+            context = canvas.getContext('2d');
+
+            // Event listener to enter Fullscreen
+            $('#fullscreen-option').click(function(){
+                fullscreen();
+                $('.fullscreen-button').hide();
+                $('.exit-fullscreen-button').show();
+            });
+
+            // Event listener to exit Fullscreen
+            $('#exit-fullscreen-option').click(function(){
+                if (getFullscreenElement()) {
+                    document.exitFullscreen();
+                }
+                $('.fullscreen-button').show();
+                $('.exit-fullscreen-button').hide();
+            });
+            
+            // Change the background color function
+            function ChangeBackgroundColor(newColor){
+                backgroundColor = newColor || "#5A19EA"; // New Color or Default Blue Color
+            }
+
+            // Initiate for the first time and give the custom color to the background
+            ChangeBackgroundColor();
+
+            // Event listener for the background color options
+            $('.background-color-buttons .background-color').click(function(){
+                //console.log('top' + $(this).data('bg-color'));
+                // Grab the color from the selection
+                var newColor = $(this).data('bg-color');
+                // Change background color
+                ChangeBackgroundColor(newColor);
+            });
+
+            // Event Listener for the Background type options
+            $('.background-color-buttons .background-type-0').click(function(){
+                // Select background type
+                backgroundType = 0; // SIMPLE
+                $("#canvas").removeAttr('width').removeAttr('height');
+            });
+            $('.background-color-buttons .background-type-1').click(function(){
+                // Select background type
+                backgroundType = 1; // GRADIENT
+                $("#canvas").removeAttr('width').removeAttr('height');
+            });
+            $('.background-color-buttons .background-type-2').click(function(){
+                // Select background type
+                backgroundType = 2; // Canvas Animated Gradient Background
+
+                // Assign a new width and height to the canvas 
+                $('#canvas').attr('width', '32');
+                $('#canvas').attr('height', '32');
+            });
+            $('.background-color-buttons .background-type-3').click(function(){
+                // Select background type
+                backgroundType = 3; // SIMPLE
+                $("#canvas").removeAttr('width').removeAttr('height');
+            });
+
+            // Event listener for the Custom color input field
+            //$("#custom_color").change(function(event) {
+            $('input.custom_color').on('input',function(e){
+                // console.log($(this).val());
+                $("#color_front").css('background-color',$(this).val());
+
+                ChangeBackgroundColor($(this).val());
+            });
+            $("#color_front").click(function(event) {
+                $("#custom_color").click();
+            });            
+
+            // Request an animation frame for the first time
+            // The gameLoop() function will be called as a callback of this request
+            window.requestAnimationFrame(gameLoop);
+        }
+
+        function gameLoop(timeStamp) {
+
+            //document.getElementById('site-name').style.width = window.innerWidth + 'px';
+
+            // Resize the fullpage container to occupy the full page, 
+            document.getElementById('fullpage-container').style.width = window.innerWidth + 'px';
+            document.getElementById('fullpage-container').style.height = window.innerHeight + 'px';
+
+            // Resize the canvas to occupy the full page, 
+			//by getting the widow width and height and setting it to canvas
+            if (backgroundType != 2) {
+                canvas.width  = window.innerWidth;
+			    canvas.height = window.innerHeight; 
+            }
+
+            // Calculate the number of seconds passed since the last frame
+            secondsPassed = (timeStamp - oldTimeStamp) / 1000;
+            oldTimeStamp = timeStamp;
+
+            // Calculate fps
+            fps = Math.round(1 / secondsPassed);
+
+            // Perform the drawing operation
+            draw();
+
+            // The loop function has reached it's end
+            // Keep requesting new frames
+            window.requestAnimationFrame(gameLoop);
+        }
+
+        function draw() {
+
+            //console.log(backgroundType);
+            //console.log(backgroundColor);
+
+            if (backgroundType == 0) { // SIMPLE
+                ////////////////////////
+                // Random Colored square
+                ////////////////////////
+
+                // Get the window width and height
+                var W = window.innerWidth;
+                var H = window.innerHeight;
+
+                // Get the current selected color
+                context.fillStyle = backgroundColor;
+
+                // Draw a rectangle on the canvas
+                // context.fillRect(Width Pos Start, Height Pos Start, Width length, Height Length);
+                context.fillRect(0, 0, W, H);
+
+                ///////////////////////////////
+                // END of Random Colored square
+                ///////////////////////////////
+            }
+            else if (backgroundType == 1) {
+                /////////////////////////////
+                // Linear Gradient Background 
+                /////////////////////////////
+
+                // Get the window width and height
+                var W = window.innerWidth;
+                var H = window.innerHeight;
+
+                // Create Linear Gradients
+                var lingrad = context.createLinearGradient(0,0,0,H);
+
+                lingrad.addColorStop(0, '#000000');
+                lingrad.addColorStop(0.5, backgroundColor);
+                lingrad.addColorStop(1, '#000000');
+
+                // assign gradients to fill and stroke styles
+                context.fillStyle = lingrad;
+
+                // draw shapes
+                context.fillRect(0, 0, W, H);
+                
+                ////////////////////////////////////
+                // END of Linear Gradient Background 
+                ////////////////////////////////////
+            }
+            else if (backgroundType == 2) {
+                ////////////////////////////////////////////
+                // HTML5 Canvas Animated Gradient Background
+                // https://codepen.io/tmrDevelops/pen/vOPZBv
+                ////////////////////////////////////////////
+
+                for(let x = 0; x <= 35; x++) {
+                    for(let y = 0; y <= 35; y++) {
+                        context.fillStyle = "rgb(" + R(x,y,t) + "," + G(x,y,t) + "," + B(x,y,t) + ")";
+                        context.fillRect(x, y, 1,1);
+                    }
+                }
+                // Time + Animation Speed
+                t = t + speed;
+
+                ///////////////////////////////////////////////////
+                // END of HTML5 Canvas Animated Gradient Background
+                ///////////////////////////////////////////////////
+            }
+            else {
+
+                if (timer > 100) {
+                    timer = 0;
+
+                    do 
+                    {
+                        SelectRandomColor();
+                    } while (backgroundColor == oldRandomColor);
+                }
+                timer = timer + interval;
+
+                // Get the window width and height
+                var W = window.innerWidth;
+                var H = window.innerHeight;
+
+                // Get the current selected color
+                context.fillStyle = backgroundColor;
+
+                oldRandomColor = backgroundColor;
+
+                // Draw a rectangle on the canvas
+                // context.fillRect(Width Pos Start, Height Pos Start, Width length, Height Length);
+                context.fillRect(0, 0, W, H);
+            }
+
+            ////////////////////////
+            // Random Colored square
+            ////////////////////////
+
+            // Get a random color, red or blue
+            //context.fillStyle = Math.random() > 0.5 ? '#ff8080' : '#0099b0';
+
+            // Draw a rectangle on the canvas
+            // context.fillRect(Width Pos Start, Height Pos Start, Width length, Height Length);
+            //context.fillRect((W / 2) - ((W / 2) / 2), (H / 2) - ((H / 2) / 2), W / 2, H / 2);
+
+            ///////////////////////////////
+            // END of Random Colored square
+            ///////////////////////////////
+
+
+            ///////////////
+            // Show the FPS
+            ///////////////
+
+            // Draw FPS to the screen
+            //context.fillStyle = 'black';
+            //context.fillRect(0, 0, 65, 30);
+            //context.font = '15px Arial';
+            //context.fillStyle = 'white';
+            //context.fillText("FPS: " + fps, 5, 20);
+
+            //////////////////////
+            // End of Show the FPS
+            //////////////////////
+        }
+
+        function fullscreen(){
+			var el = document.getElementById('fullpage-container');
+	
+			if(el.webkitRequestFullScreen) {
+				el.webkitRequestFullScreen();
+			}
+			else {
+				el.mozRequestFullScreen();
+			}            
+		}
+    </script>
+</body>
+</html>
