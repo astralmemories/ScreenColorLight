@@ -1,7 +1,7 @@
 # ScreenColorLight
 Turn your computer screen into a color-changing light! Choose colors to match your mood.
 
-Official Website/Demo: https://screencolorlight.astralmemories.com
+Official Website/Demo: https://screencolorlight.freewebtools.net
 
 ## Features:
 - Plain color mode
@@ -14,5 +14,4 @@ Official Website/Demo: https://screencolorlight.astralmemories.com
 - HTML5 Canvas
 
 ## License
-MIT
-**Free Software**
+[The MIT License](https://github.com/astralmemories/ScreenColorLight/blob/main/LICENSE.md)
